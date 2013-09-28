@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>quiz app</title>
+        <link rel="stylesheet" type="text/css" href="/lib/js/touch/current/resources/css/sencha-touch.css"/>
+        <script src="/lib/js/touch/current/sencha-touch-all-debug.js"></script>
+        <script src="/js/app/data/questionList.js"></script>
+	<script>
+/*
+Ext.Loader.setConfig({
+	enabled: true,
+	paths: {
+		Qz: ''
+	}
+});
+*/
+
+Ext.application({
+	name: 'Qz',
+	appFolder: '/js/app',
+	models: ['Answer','Question'],
+	stores: ['Answers','Questions'],
+	views: ['AnswerChart', 'QuestionPanel'],
+	controllers: ['Boot'],
+	juggle: function (array) {
+		for (var i = array.length - 1; i > 0; i--) {
+			var j = Math.floor(Math.random() * (i + 1));
+			var temp = array[i];
+			array[i] = array[j];
+			array[j] = temp;
+		}
+		return array;
+	},
+	categoryPath: function(data, q, join ){
+		var parent = [];
+
+		var runner = function(d){
+			for(var i in d){
+				parent.push(i);
+
+				//object has children
+				if( Object.keys(d[i]).length ){
+					if (i === q){
+	//					console.log('found it!!');
+						throw "found it!! YAH"
+						return true;
+					}
+					runner( d[i] );
+
+				//at the end
+				} else {
+					if (i === q){
+	//					console.log('found it!');
+						throw "found it! YAH";
+						return true;
+					} else {
+						parent.pop();
+					}
+				}
+			}
+		}
+
+		//loop through main branches
+		for(var x in data){
+			parent.push(x);
+			if (x === q){
+	//			console.log(parent);
+				if( join ) {
+					return parent.join(join);
+				}
+				return true;
+			} try {
+				runner(data[x]);
+			} catch (found) {
+	//			console.log(found);
+	//			console.log(parent);
+				if( join ) {
+					return parent.join(join);
+				}
+				return true;
+			}
+			parent = [];
+		}
+	},
+	launch: function() {
+
+		Ext.Viewport.add({
+ 			xtype: 'tabpanel',
+			fullscreen: true,
+			tabBarPosition: 'bottom',
+			items: [{
+				title: 'question',
+				iconCls: 'home',
+				xtype: 'questionpanel'
+			},{
+				title: 'status',
+				iconCls: 'home',
+				xtype: 'answerchart'
+			}]
+		});
+
+	//	Ext.getStore('Questions').fetchQuestion(23);
+
+		Ext.ComponentQuery.query('viewport questionpanel')[0].loadQuestion( 
+			Ext.getStore('Questions').fetchQuestion()
+		);
+	}
+});
+	</script>
+    </head>
+    <body>
+    </body>
+</html>
